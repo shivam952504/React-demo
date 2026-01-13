@@ -1,0 +1,179 @@
+<ResponsiveContainer width="100%" height={260}>
+  <BarChart data={per_lob}>
+    <XAxis
+      dataKey="lob"
+      interval={0}
+      angle={-15}
+      textAnchor="end"
+      height={70}
+    />
+
+    <YAxis
+      label={{
+        value: "Number of Metrics",
+        angle: -90,
+        position: "insideLeft"
+      }}
+    />
+
+    <Tooltip />
+
+    <Legend />
+
+    <Bar
+      dataKey="met"
+      stackId="a"
+      fill="#52c41a"
+      radius={[6, 6, 0, 0]}
+      name="Met"
+    />
+
+    <Bar
+      dataKey="miss"
+      stackId="a"
+      fill="#ff4d4f"
+      radius={[6, 6, 0, 0]}
+      name="Missed"
+    />
+  </BarChart>
+</ResponsiveContainer>
+
+<XAxis
+  dataKey="lob"
+  tickFormatter={shorten}
+  interval={0}
+  angle={-15}
+  textAnchor="end"
+/>
+
+const shorten = (s) =>
+  s.length > 22 ? s.slice(0, 22) + "…" : s;
+
+import "./lobTable.css";
+
+export default function LOBMetricsTable({ table }) {
+  return (
+    <div className="lob-table-wrapper">
+      <div className="lob-table-title">
+        {table.title.replace("_", " ").toUpperCase()}
+        <span className="lob-table-source">
+          Source: {table.file_name}
+        </span>
+      </div>
+
+      <table className="lob-table">
+        <thead>
+          <tr>
+            <th>LOB</th>
+            {table.columns.map((col) => (
+              <th key={col}>{col}</th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {table.rows.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {row.show_lob && (
+                <td
+                  className="lob-cell"
+                  rowSpan={row.rowspan}
+                >
+                  {row.lob}
+                </td>
+              )}
+
+              {row.values.map((val, i) => (
+                <td
+                  key={i}
+                  className={getCellClass(val)}
+                >
+                  {val ?? "N/A"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function getCellClass(value) {
+  if (!value || value === "N/A") return "cell-na";
+
+  if (typeof value === "string" && value.includes("%")) {
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+      return num >= 95 ? "cell-good" : "cell-bad";
+    }
+  }
+
+  return "";
+}
+
+.lob-table-wrapper {
+  margin-top: 24px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 16px 16px 8px;
+}
+
+.lob-table-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lob-table-source {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.lob-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.lob-table th {
+  background: #fafafa;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.lob-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.lob-cell {
+  font-weight: 600;
+  background: #fafafa;
+  vertical-align: middle;
+}
+
+/* value styling */
+.cell-good {
+  background: #eef8f1;
+  font-weight: 600;
+}
+
+.cell-bad {
+  background: #fdeeee;
+  font-weight: 600;
+}
+
+.cell-na {
+  color: #999;
+  text-align: center;
+}
+in keyMetricsSummary
+{tables.map((table) => (
+  <LOBMetricsTable key={table.title} table={table} />
+))}
