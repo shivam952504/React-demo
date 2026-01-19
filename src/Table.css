@@ -1,0 +1,26 @@
+/* LOB column */
+.metrics-table th:nth-child(1),
+.metrics-table td:nth-child(1) {
+  width: 160px;
+  vertical-align: top;
+}
+
+/* Metric column — FULL TEXT, MULTI-LINE */
+.metrics-table th:nth-child(2),
+.metrics-table td:nth-child(2) {
+  width: 320px;              /* enough space for names */
+  white-space: normal;       /* 🔥 allow wrapping */
+  word-break: break-word;    /* break long words */
+  overflow: visible;         /* 🔥 no clipping */
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* Target column */
+.metrics-table th:nth-child(3),
+.metrics-table td:nth-child(3) {
+  width: 140px;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: 600;
+}
