@@ -1,0 +1,21 @@
+.underperforming-lob-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.underperforming-lob-list li {
+  margin-bottom: 12px;
+}
+
+.underperforming-lob-list strong {
+  display: block;
+  font-weight: 600;
+}
+
+.lob-sub {
+  margin-top: 4px;
+  padding-left: 8px;
+  color: #555;
+}
+
