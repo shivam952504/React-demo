@@ -1,0 +1,359 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Select, Table, Button, Spin } from "antd";
+import "./KeyMetricsSummary.css";
+
+const { Option } = Select;
+
+export default function KeyMetricsSummary() {
+
+  const [loading,setLoading] = useState(false)
+  const [viewBy,setViewBy] = useState("day")
+
+  const [filters,setFilters] = useState({
+    year:2026,
+    month:"February",
+    geo:"ALL",
+    client_name:"ALL",
+    program:"ALL",
+    lob:"ALL",
+    supervisor:"ALL",
+    tenure_unit:"month",
+    tenure_lower:0,
+    tenure_upper:0
+  })
+
+  const [filterOptions,setFilterOptions] = useState({})
+  const [tableData,setTableData] = useState([])
+
+  const BASE_URL = "http://localhost:9009/api"
+
+  /* ---------------------- FILTER API ---------------------- */
+
+  const loadFilters = async() => {
+
+    const res = await axios.post(
+      `${BASE_URL}/get_concora_daily_filters/`,
+      filters
+    )
+
+    setFilterOptions(res.data)
+  }
+
+  /* ---------------------- TABLE API ---------------------- */
+
+  const loadTableData = async() => {
+
+    setLoading(true)
+
+    const res = await axios.post(
+      `${BASE_URL}/get_concora_daily_data/`,
+      filters
+    )
+
+    const response = res.data
+
+    const dates = Object.keys(response)
+
+    const metrics = [
+      "AHT",
+      "CSAT",
+      "CallQuality",
+      "Adherence",
+      "ProductionHours",
+      "Absenteeism",
+      "Shrinkage",
+      "Attrition"
+    ]
+
+    const rows = metrics.map(metric => {
+
+      const row = { metric }
+
+      dates.forEach(date => {
+
+        if(metric === "CSAT"){
+          row[date] = response[date].CSAT?.overall ?? "-"
+        }else{
+          row[date] = response[date][metric] ?? "-"
+        }
+
+      })
+
+      return row
+    })
+
+    setTableData(rows)
+    setLoading(false)
+  }
+
+  /* ---------------------- PAGE LOAD ---------------------- */
+
+  useEffect(()=>{
+
+    loadFilters()
+    loadTableData()
+
+  },[])
+
+  /* ---------------------- FILTER CHANGE ---------------------- */
+
+  const updateFilter = (key,value) => {
+
+    const updated = {...filters,[key]:value}
+
+    setFilters(updated)
+
+    axios.post(`${BASE_URL}/get_concora_daily_filters/`,updated)
+      .then(res=>setFilterOptions(res.data))
+
+    axios.post(`${BASE_URL}/get_concora_daily_data/`,updated)
+      .then(res=>{
+        const response=res.data
+        const dates=Object.keys(response)
+
+        const metrics=[
+          "AHT","CSAT","CallQuality","Adherence",
+          "ProductionHours","Absenteeism","Shrinkage","Attrition"
+        ]
+
+        const rows=metrics.map(metric=>{
+          const row={metric}
+
+          dates.forEach(date=>{
+            if(metric==="CSAT"){
+              row[date]=response[date].CSAT?.overall ?? "-"
+            }else{
+              row[date]=response[date][metric] ?? "-"
+            }
+          })
+
+          return row
+        })
+
+        setTableData(rows)
+      })
+  }
+
+  /* ---------------------- TABLE COLUMNS ---------------------- */
+
+  const dateColumns = tableData.length
+    ? Object.keys(tableData[0]).filter(c => c !== "metric")
+    : []
+
+  const columns = [
+    {
+      title:"Metric",
+      dataIndex:"metric",
+      fixed:"left",
+      width:200
+    },
+    ...dateColumns.map(date=>({
+      title:date,
+      dataIndex:date,
+      render:(value)=>{
+
+        let bg=""
+
+        if(value>=95) bg="heat-high"
+        else if(value>=85) bg="heat-mid"
+        else bg="heat-low"
+
+        return <div className={`heat-cell ${bg}`}>{value}</div>
+      }
+    }))
+  ]
+
+  return (
+
+    <div className="km-container">
+
+      {/* FILTER BOX */}
+
+      <div className="filter-box">
+
+        <div className="filter-item">
+          <label>YEAR</label>
+          <Select
+            value={filters.year}
+            onChange={v=>updateFilter("year",v)}
+          >
+            {filterOptions.year?.map(y=>(
+              <Option key={y}>{y}</Option>
+            ))}
+          </Select>
+        </div>
+
+        {viewBy==="day" && (
+
+          <div className="filter-item">
+            <label>MONTH</label>
+            <Select
+              value={filters.month}
+              onChange={v=>updateFilter("month",v)}
+            >
+              {filterOptions.month?.map(m=>(
+                <Option key={m}>{m}</Option>
+              ))}
+            </Select>
+          </div>
+
+        )}
+
+        <div className="filter-item">
+          <label>GEOGRAPHY</label>
+          <Select
+            value={filters.geo}
+            onChange={v=>updateFilter("geo",v)}
+          >
+            {filterOptions.geo?.map(g=>(
+              <Option key={g}>{g}</Option>
+            ))}
+          </Select>
+        </div>
+
+        <div className="filter-item">
+          <label>CLIENT</label>
+          <Select
+            value={filters.client_name}
+            onChange={v=>updateFilter("client_name",v)}
+          >
+            {filterOptions.client_name?.map(c=>(
+              <Option key={c}>{c}</Option>
+            ))}
+          </Select>
+        </div>
+
+        <div className="filter-item">
+          <label>LOB</label>
+          <Select
+            value={filters.lob}
+            onChange={v=>updateFilter("lob",v)}
+          >
+            {filterOptions.program?.map(p=>(
+              <Option key={p}>{p}</Option>
+            ))}
+          </Select>
+        </div>
+
+        <div className="filter-item">
+          <label>SUPERVISOR</label>
+          <Select
+            value={filters.supervisor}
+            onChange={v=>updateFilter("supervisor",v)}
+          >
+            {filterOptions.supervisor?.map(s=>(
+              <Option key={s}>{s}</Option>
+            ))}
+          </Select>
+        </div>
+
+      </div>
+
+      {/* VIEW BY */}
+
+      <div className="viewby">
+
+        <span>View By:</span>
+
+        <Button
+          className={viewBy==="day" ? "active" : ""}
+          onClick={()=>setViewBy("day")}
+        >
+          Day
+        </Button>
+
+        <Button
+          className={viewBy==="week" ? "active" : ""}
+          onClick={()=>setViewBy("week")}
+        >
+          Week
+        </Button>
+
+        <Button
+          className={viewBy==="month" ? "active" : ""}
+          onClick={()=>setViewBy("month")}
+        >
+          Month
+        </Button>
+
+      </div>
+
+      {/* TABLE */}
+
+      {loading ? (
+        <Spin size="large"/>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={tableData}
+          pagination={false}
+          scroll={{x:true}}
+        />
+      )}
+
+    </div>
+
+  )
+}
+
+.km-container{
+padding:20px;
+}
+
+.filter-box{
+display:flex;
+gap:20px;
+padding:20px;
+background:#fff;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+margin-bottom:20px;
+flex-wrap:wrap;
+}
+
+.filter-item{
+display:flex;
+flex-direction:column;
+}
+
+.filter-item label{
+font-size:12px;
+color:#8c8c8c;
+margin-bottom:5px;
+}
+
+.viewby{
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:15px;
+}
+
+.viewby button{
+background:#f2f2f2;
+border:none;
+}
+
+.viewby button.active{
+background:#1f8a70;
+color:white;
+}
+
+.heat-cell{
+padding:6px;
+text-align:center;
+border-radius:4px;
+}
+
+.heat-high{
+background:#d4edda;
+}
+
+.heat-mid{
+background:#fff3cd;
+}
+
+.heat-low{
+background:#f8d7da;
+}
