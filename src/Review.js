@@ -1,6 +1,0 @@
-Contributed to the development of key digital solutions by implementing high-quality frontend features, collaborating closely with cross-functional teams, and identifying opportunities to improve development efficiency through reusable components and automation. Maintained a strong focus on code quality, scalability, and best practices throughout the project lifecycle.
-
-  Actively explored and adopted AI-assisted development practices to improve productivity and code quality. Leveraged AI tools for solution design, troubleshooting, and learning while sharing knowledge and continuously enhancing technical capabilities to support project delivery.
-
-  Consistently delivered high-quality work with attention to detail, adhered to coding standards and review processes, and demonstrated accountability in completing assigned tasks. Proactively contributed ideas for improvement while maintaining a collaborative and inclusive approach with team members.
-  Collaborated effectively with teammates by sharing knowledge, supporting technical discussions, participating in code reviews, and maintaining clear communication. Fostered a positive team environment by being approachable, dependable, and willing to assist others whenever needed.
